@@ -10,7 +10,7 @@
 
 .overlay {
   position: fixed;
-  top: 20vh;
+  top: 5vh;
   left: 5%;
   width: 90%;
   z-index: 30;

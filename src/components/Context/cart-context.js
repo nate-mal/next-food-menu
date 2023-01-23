@@ -81,7 +81,7 @@ export const CartContextProvider = (props) => {
     dispatchCartContext({ type: actionType, value: value });
   };
   const [updateMeals, setUpdateMeals] = useState(undefined);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   return (
     <CartContext.Provider
       value={{
@@ -92,7 +92,7 @@ export const CartContextProvider = (props) => {
         cartCost,
         updateMeals,
         setUpdateMeals,
-        loading,
+        isLoading,
         setLoading,
       }}
     >

@@ -1,10 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import styles from "./AvailableMeals.module.css";
 import Card from "../UI/Card/Card";
 import MealsSummary from "./MealsSummary";
 import MealItem from "./MealItem";
 import CartContext from "../Context/cart-context";
 import useHttp from "../../hooks/use-http";
+import axios from 'axios'
 import {
   Stack,
   Typography,
@@ -17,28 +18,28 @@ import {
 
 const AvailableMeals = (props) => {
   const ctxCart = useContext(CartContext);
-  const [meals, setMeals] = useState([]);
+  const [meals, setMeals] = useState(props.meals);
   let showMeals = [];
   const [searchedMeal, setSearchedMeal] = useState(undefined);
-  const [categorys, setCategorys] = useState([]);
-  const [activeCategorys, setActiveCategorys] = useState(
+  const [categories, setCategories] = useState(props.categories);
+  const [activeCategories, setActiveCategories] = useState(
     ctxCart.updateMeals ? [ctxCart.updateMeals] : []
   );
   const [page, setPage] = React.useState(1);
   const updateShowMeals = (respond) => {
-    const temp = respond ? respond : meals;
-    if (activeCategorys.length !== 0) {
-      const filterMeals = temp.filter((item) => {
-        for (const category of activeCategorys) {
+    const temp = respond ? respond : meals ? meals : [];
+    if (activeCategories.length !== 0) {
+      const filterMealsName = temp.filter((item) => {
+        for (const category of activeCategories) {
           if (searchedMeal) {
             if (
               item.category === category &&
-              item.name.includes(searchedMeal)
+              (item.name.toLowerCase().includes(searchedMeal.toLowerCase()))
             ) {
               return true;
             }
-            if (searchedMeal && activeCategorys.length === 1) {
-              if (item.name.includes(searchedMeal)) {
+            if (searchedMeal && activeCategories.length === 1) {
+              if ( item.name.toLowerCase().includes(searchedMeal.toLowerCase())) {
                 return true;
               }
             }
@@ -48,14 +49,33 @@ const AvailableMeals = (props) => {
         }
         return false;
       });
+      const filterMealsCategory = temp.filter((item) => {
+        for (const category of activeCategories) {
+          if (searchedMeal) {
+            if (
+              item.category === category &&
+              (item.category.toLowerCase().includes(searchedMeal.toLowerCase()))
+            ) {
+              return true;
+            }
+            if (searchedMeal && activeCategories.length === 1) {
+              if ( item.category.toLowerCase().includes(searchedMeal.toLowerCase())) {
+                return true;
+              }
+            }
+          } 
+        }
+        return false;
+      });
 
-      showMeals = filterMeals;
+      showMeals = [...filterMealsName,...filterMealsCategory];
     } else {
+      
       showMeals = meals;
     }
   };
   updateShowMeals();
-  const extractMeals = (data) => {
+  const extractMeals = useCallback((data) => {
     let mealsData = [];
     console.log(data);
     for (const mealKey in data) {
@@ -81,21 +101,24 @@ const AvailableMeals = (props) => {
       if (ctxCart.updateMeals && !temp.includes(ctxCart.updateMeals)) {
         temp.push(ctxCart.updateMeals);
       }
-      setCategorys(temp);
+      setCategories(temp);
     });
     return mealsData;
-  };
+  },[ctxCart.updateMeals]);
 
   // const { isLoading, error, sendRequest } = useHttp(
   //   "https://nat-development-default-rtdb.europe-west1.firebasedatabase.app/meals.json"
   // );
   const { isLoading, error, sendRequest } = useHttp("/api/products");
-  useEffect(() => {
-    sendRequest(undefined, extractMeals);
-  }, [sendRequest]);
-  useEffect(() => {
+  // useEffect(() => {
+  //   sendRequest(undefined, extractMeals);
+  // }, []);
+ 
+
+  if(ctxCart.isLoading !== isLoading){
     ctxCart.setLoading(isLoading);
-  }, [isLoading]);
+  }
+
   const updateCart = (getItem) => {
     const objMeal = { item: getItem.meal, amount: +getItem.amount };
     ctxCart.updateCart("ADD", objMeal);
@@ -111,17 +134,17 @@ const AvailableMeals = (props) => {
         `/api/products/${ctxCart.updateMeals}`
       );
 
-      setCategorys((prev) => [
+      setCategories((prev) => [
         updateMeals,
         ...prev.filter((option) => option !== searchedMeal),
       ]);
-      setActiveCategorys((prev) => [
+      setActiveCategories((prev) => [
         updateMeals,
         ...prev.filter((option) => option !== searchedMeal),
       ]);
       setSearchedMeal(updateMeals);
     }
-  }, [ctxCart.updateMeals]);
+  }, [ctxCart.updateMeals,sendRequest]);
 
   const handleChange = (event, value) => {
     setPage(value);
@@ -134,21 +157,23 @@ const AvailableMeals = (props) => {
         <Autocomplete
           multiple
           id="tags-outlined"
-          options={categorys}
+          options={categories ? categories :[]}
           getOptionLabel={(option) => option}
-          value={activeCategorys}
+          value={activeCategories}
           onChange={(event, newValue) => {
             setPage(1);
             if (ctxCart.updateMeals && newValue[0] != ctxCart.updateMeals) {
               ctxCart.setUpdateMeals(undefined);
               setSearchedMeal(undefined);
+              setCategories([]);
               sendRequest(undefined, extractMeals);
             }
-            setActiveCategorys((prev) => [...newValue]);
+            setActiveCategories((prev) => [...newValue]);
           }}
           renderTags={(tagValue, getTagProps) =>
             tagValue.map((option, index) => (
               <Chip
+              key={index}
                 label={option}
                 {...getTagProps({ index })}
                 // disabled={fixedOptions.indexOf(option) !== -1}
@@ -160,7 +185,7 @@ const AvailableMeals = (props) => {
             <TextField
               {...params}
               label="Filter Meals"
-              placeholder="Categorys"
+              placeholder="categories"
             />
           )}
         />
@@ -183,7 +208,7 @@ const AvailableMeals = (props) => {
                 />
               );
             })}
-          {!meals && !isLoading && !error && <p>The menu list is empty</p>}
+          {showMeals.length === 0 && !isLoading && !error && <p>{`No products found with your description:${searchedMeal}`} </p>}
           {isLoading && <p className={styles.center}>Is loading...</p>}
           {error && (
             <p className={styles["text-error"]}>
@@ -193,9 +218,9 @@ const AvailableMeals = (props) => {
         </ul>
       </Card>
       <Grid container justifyContent="center">
-        <Grid item>
+        <Grid item sx={{marginBottom:'1em'}}>
           <Stack spacing={2}>
-            {page && <Typography>Page: {page}</Typography>}
+            {page && <Typography align="center">Page: {page}</Typography>}
             <Pagination
               count={Math.ceil(showMeals.length / 10)}
               page={page}
@@ -207,5 +232,45 @@ const AvailableMeals = (props) => {
     </>
   );
 };
+
+
+  export async function getStaticProps() {
+
+    const data = await axios.get('/api/products');
+    let mealsData = [];
+      console.log(data);
+      for (const mealKey in data) {
+        if (mealKey > 0) {
+          mealsData.push({
+            id: data[mealKey].id,
+            name: data[mealKey].name,
+            description: data[mealKey].description,
+            price: data[mealKey].price,
+            category: data[mealKey].category,
+            serving: data[mealKey].serving,
+          });
+        }
+      }
+ 
+      let temp = [];
+      mealsData.map((item) => {
+        if (!temp.includes(item.category)) {
+          temp.push(item.category);
+        }
+      
+      });
+   
+
+
+    return {
+        props: {
+           meals:mealsData,
+           categories:temp
+        },
+        revalidate:100,
+       
+    };
+}
+
 
 export default AvailableMeals;

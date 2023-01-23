@@ -28,3 +28,34 @@ CREATE TABLE products (
 --         REFERENCES category(id),
 
 -- );
+
+CREATE TABLE clients (
+    id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    email VARCHAR(200),
+    _address TEXT NOT NULL,
+    tel INT,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE orders (
+    id INT NOT NULL AUTO_INCREMENT,
+    client_id INT NOT NULL,
+    set_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_time TIMESTAMP,
+    obs TEXT,
+    PRIMARY KEY (id),
+    FOREIGN KEY (client_id)
+       REFERENCES clients(id)
+);
+
+CREATE TABLE orders_products (
+    id INT NOT NULL AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    amount INT NOT NULL,
+    price FLOAT NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (order_id)   REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id)   REFERENCES products(id)
+);

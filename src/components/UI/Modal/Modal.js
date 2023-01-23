@@ -5,7 +5,7 @@ const Modal = (props) => {
   return ReactDOM.createPortal(
     <>
       <div onClick={props.onBlur} className={styles.backdrop} />
-      <div className={styles.overlay}>{props.children}</div>
+      <div style={props.style} className={styles.overlay}>{props.children}</div>
     </>,
     document.getElementById("modal")
   );
