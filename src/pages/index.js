@@ -3,6 +3,7 @@ import Head from "next/head";
 import AvailableMeals from "@/components/Meals/AvailableMeals";
 import CartContext from "../components/Context/cart-context";
 import Cart from "@/components/Cart/Cart";
+import  { getAllProducts } from "./api/products";
 export default function Home(props) {
   const ctxCart = useContext(CartContext);
   console.log("cart ctx:");
@@ -24,8 +25,9 @@ export default function Home(props) {
 
 export async function getStaticProps() {
 
-const res = await fetch('http://localhost:3000/api/products');
-const data = await res.json();
+
+ const data = await getAllProducts();
+
  console.log(data);
   let meals = data;
   let categories = [];
