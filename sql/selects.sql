@@ -1,5 +1,15 @@
+
+SELECT products2.name, products2.id,  products2.price, products2.serving_size as serving, category.name as category  FROM products2 INNER JOIN category ON products2.category_id=category.id WHERE LOWER(products2.name) LIKE ?  OR   LOWER(category.name) LIKE ? LIMIT  300;
+
+
+
+SELECT products2.name, products2.id,  products2.price, products2.serving_size as serving, category.name as category  FROM products2 INNER JOIN category ON products2.category_id=category.id limit 300;
+
+
 select orders.id, clients.name, clients._address, clients.tel, orders.set_time, orders.completed_time, orders_products.product_id, products2.name, category.name as category,orders_products.price  from clients inner join orders on orders.client_id = clients.id  right join orders_products on orders.id=orders_products.order_id left join products2 on orders_products.product_id = products2.id inner join category
 on products2.category_id=category.id;
+
+
 select  sum(orders_products.price)  from clients inner join orders on orders.client_id = clients.id  right join orders_products on orders.id=orders_products.order_id left join products2 on orders_products.product_id = products2.id inner join category
 on products2.category_id=category.id where orders.id=30004;
 
