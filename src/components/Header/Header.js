@@ -16,7 +16,7 @@ const Header = () => {
   return (
     <>
       {ctxCart.isLoading && (
-        <Box style={{ position: "fixed", width: "100%" }}>
+        <Box style={{ position: "fixed", width: "100%",zIndex:1001 }}>
           <LinearProgress />
         </Box>
       )}

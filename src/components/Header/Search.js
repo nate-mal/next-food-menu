@@ -30,17 +30,27 @@ const Search = styled("div")(({ theme }) => ({
 //   justifyContent: "center",
 // }));
 
+
 const SearchField = ({ onSearch }) => {
   const [searchValue, setSearchValue] = useState("");
+
+  const handlerSubmit = (event)=>{
+    event.preventDefault();
+    if(searchValue.trim().length>0){
+      onSearch(searchValue)
+  
+    }
+  }
   return (
-    <Search>
+    <form onSubmit={handlerSubmit}>
+    <Search >
       <Grid container>
-        <Grid item>
-          <IconButton onClick={() => onSearch(searchValue)}>
+        <Grid item xs={1}>
+          <IconButton type="submit" onClick={handlerSubmit}>
             <SearchIcon />
           </IconButton>
         </Grid>
-        <Grid item>
+        <Grid item xs={11}>
           <InputBase
             placeholder="Search…"
             value={searchValue}
@@ -68,6 +78,7 @@ const SearchField = ({ onSearch }) => {
         </Grid>
       </Grid>
     </Search>
+    </form>
   );
 };
 
