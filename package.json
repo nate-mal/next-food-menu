@@ -1,4 +1,14 @@
 {
+  "bin": "server.js",
+  "pkg": {
+    "assets": [
+      ".next/**/*",
+      "public/meals.jpg"
+    ],
+    "scripts": [
+      ".next/dist/**/*.js"
+    ]
+  },
   "name": "food_order_next_app",
   "version": "0.1.0",
   "private": true,
